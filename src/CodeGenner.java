@@ -22,7 +22,18 @@ public class CodeGenner {
 
     public static void main(String[] args) {
         CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA\\IdeaProjects\\my_mvc_code_genner\\src");
-        genner.addPojo("TTT").start();
+        genner
+                .addPojo("Customer")
+
+                .addPojo("Book")
+                    .setController(false)
+
+                .addPojo("RentInfo")
+                    .setRepository(false)
+                    .setService(false)
+                    .setPojo(false)
+                .start();
+
     }
 
     Pojo target;
@@ -76,7 +87,10 @@ public class CodeGenner {
         target.service = flag;
         return this;
     }
-
+    public CodeGenner setPojo(boolean flag) {
+        target.pojo = flag;
+        return this;
+    }
     public void start() {
         File rootFile = new File(rootPath);
         if (!rootFile.exists()) {
