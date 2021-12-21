@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
+
 /**
  * 为基于JPA的SpringBoot MVC写的代码生成器
  * 生成实体类的四个文件 控制层 服务层 数据访问层 和 实体类定义
  * 用于快速搭建项目文件框架
  */
+
 public class CodeGenner {
     static class Pojo {
         private final String name;
@@ -24,6 +26,7 @@ public class CodeGenner {
         private boolean service = true;
         private boolean pojo = true;
 
+      
         //用于CrudRepository
         public String idClassName = "Long";
         //Entity类的属性
