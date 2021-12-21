@@ -6,15 +6,13 @@
 
 * 为基于JPA的SpringBoot MVC写的代码生成器
 * 生成器以实体类为入口 通过指定实体类的名称 类的属性 来进行对应的生成
-* 生成实体类的四个文件 控制层 服务层 数据访问层 和 实体类定义
+* 生成实体类的四个文件 控制层 服务层 数据访问层 和 实体类定义 比如 User.java UserController UserService UserRepository
 * 用于快速搭建项目文件框架
 * 通过链式调用使用
 
 
   
-比如
-  
-User.java UserController UserService UserRepository
+
 
 类属性的设置不是必须的 你可以在创建后再自己写属性
 
