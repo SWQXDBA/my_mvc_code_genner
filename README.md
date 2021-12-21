@@ -1,8 +1,15 @@
 # my_mvc_code_genner
+
+
+这个学期给人写了很多个课设后端， 为了快速搞定前期项目结构问题 写了这个生成器
+
+
 * 为基于JPA的SpringBoot MVC写的代码生成器
+* 生成器以实体类为入口 通过指定实体类的名称 类的属性 来进行对应的生成
 * 生成实体类的四个文件 控制层 服务层 数据访问层 和 实体类定义
 * 用于快速搭建项目文件框架
-生成器以实体类为入口 设置实体类的名称 类的属性 来进行对应的生成
+
+
   
 比如
   
@@ -10,10 +17,15 @@ User.java UserController UserService UserRepository
 
 类属性的设置不是必须的 你可以在创建后再自己写属性
 
-## 案例
+## 案例 
+最佳实践: 把生成器源码粘贴到Application同级目录下  然后在Application中运行生成
 
-                //构造的时候需要指定生成路径的根目录
+                //构造的时候需要指定生成路径的根目录 
                 CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA\\IdeaProjects\\my_mvc_code_genner\\src");
+
+                //生成器会自动通过 this.getClass().getPackage().getName()来获取所在的包
+                //如果你没有把生成器的源码放在根目录 则需要指定包名  比如  com.example.code_gener_demo; 
+                //.setPackageName("com.example.code_gener_demo")
 
                 //设置持久层文件夹名称 同时会修改生成的文件名 比如Repositoy/BookRepositoy.java -> Dao/BookDao.java
                 //Service和Controller也可以进行设置 但都不是必须的 有默认的名字
