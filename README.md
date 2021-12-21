@@ -20,7 +20,7 @@ User.java UserController UserService UserRepository
 
 
 ## 案例 
-最佳实践: 把生成器源码粘贴到Application同级目录下  然后在Application中运行生成
+最佳实践: 把生成器源码（CodeGenner）粘贴到Application同级目录下  然后在Application中运行生成
 
                 //构造的时候需要指定生成路径的根目录 
                 CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA\\IdeaProjects\\my_mvc_code_genner\\src");
