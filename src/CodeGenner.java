@@ -1,5 +1,4 @@
 import com.sun.corba.se.spi.orb.StringPair;
-import org.omg.stub.java.rmi._Remote_Stub;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -286,10 +285,11 @@ public class CodeGenner {
     public void start() {
         if(recover){
             System.out.println("WARN!!! 请注意 该次生成会覆盖掉原来的文件!!!");
-            System.out.println("输入 Yes 继续");
+            String pass = "Yes";
+            System.out.println("输入 "+pass+" 继续");
             Scanner scanner = new Scanner(System.in);
             String next = scanner.next();
-            if(!"Yes".equals(next)){
+            if(!pass.equals(next)){
                 return;
             }
             scanner.close();
@@ -338,7 +338,7 @@ public class CodeGenner {
                         }
                         Files.createFile(path);
                         FileWriter writer = new FileWriter(String.valueOf(path));
-                        String packageStr = "";
+                        String packageStr;
                         if (!"".equals(packageName)) {
                             packageStr = "package " + packageName + "." + controllerDirectory + ";\n";
                         } else {
@@ -389,7 +389,7 @@ public class CodeGenner {
                         }
                         Files.createFile(path);
                         FileWriter writer = new FileWriter(String.valueOf(path));
-                        String packageStr = "";
+                        String packageStr;
                         if (!"".equals(packageName)) {
                             packageStr = "package " + packageName + "." + serviceDirectory + ";\n";
                         } else {
@@ -428,7 +428,7 @@ public class CodeGenner {
                             fieldsStrBuilder.append("    ").append(field).append(" ").append(val).append(";\n\n");
                         }
 
-                        String packageStr = "";
+                        String packageStr;
                         if (!"".equals(packageName)) {
                             packageStr = "package " + packageName + "." + pojoDirectory + ";\n";
                         } else {
