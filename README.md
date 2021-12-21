@@ -1,12 +1,72 @@
 # my_mvc_code_genner
-代码生成器 用于生成mvc代码结构
+* 为基于JPA的SpringBoot MVC写的代码生成器
+* 生成实体类的四个文件 控制层 服务层 数据访问层 和 实体类定义
+* 用于快速搭建项目文件框架
+生成器以实体类为入口 设置实体类的名称 类的属性 来进行对应的生成
+  
+比如
+  
+User.java UserController UserService UserRepository
+
+类属性的设置不是必须的 你可以在创建后再自己写属性
+
+## 案例
+
+                //构造的时候需要指定生成路径的根目录
+                CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA\\IdeaProjects\\my_mvc_code_genner\\src");
+
+                //设置持久层文件夹名称 同时会修改生成的文件名 比如Repositoy/BookRepositoy.java -> Dao/BookDao.java
+                //Service和Controller也可以进行设置 但都不是必须的 有默认的名字
+                genner.repositoryDirectory("Dao")
+
+                //增加一个实体类
+                .addPojo("Book")
+
+                //其中 idClassName决定了 JPA接口中的泛型参数 CrudRepository<Book,Integer> 如果不指定 默认为Long
+                .idClassName("Integer")
+
+                //增加一些类的属性 这些都是Book类的属性 其中id对应的属性应该第一个添加 因为会紧跟着   
+                // @Id
+                // @GeneratedValue(strategy = GenerationType.IDENTITY) 的后面
+                //第一个参数是属性的类名 第二个是属性名
+                .addField("Integer", "id")
+                .addField("String", "name")
+                .addField("Long", "price")
+                //不指定类属性名 默认以属性类名首字母小写作为属性名 比如Customer customer
+                .addField("Customer")
+
+                //clossAll()表示该类的所有文件都不进行生成 然后设置只生成Book.java和BookDao.java
+                .closeAll().setPojo(true).setRepository(true)
+
+                .addPojo("Customer")
+                .addField("Long", "id")
+                .addField("String", "userName")
+                .addField("String", "password")
+
+                //默认会生成类的四个文件 这里取消了两个 只生成Customer.java CustomerDao.java
+                .setController(false).setService(false)
+
+                .addPojo("Admin")
+                .addField("Long", "id")
+                .addField("String", "userName")
+                .addField("String", "password")
+                //生成了该类的四个文件 Admin.java AdminDao.java AdminController.java AdminService.java
+
+
+                //启动
+                .start();
+
+把项目下载到本地后打开README.md来查看图片
+
 生成前
+
 ![img.png](img.png)
 生成后
 ![img_1.png](img_1.png)
 
 
 生成会写入基本的包和注解
+
 ![img_2.png](img_2.png)
 
 ![img_3.png](img_3.png)
