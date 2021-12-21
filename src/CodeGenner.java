@@ -204,7 +204,7 @@ public class CodeGenner {
         return this;
     }
     /**
-     * 对当前pojo起效果 不其对应的所有文件
+     * 对当前pojo起效果 不生成其对应的所有文件
      * @return
      */
     public CodeGenner closeAll() {
