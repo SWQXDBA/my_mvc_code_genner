@@ -345,7 +345,9 @@ public class CodeGenner {
                             packageStr = "package " + controllerDirectory + ";\n";
                         }
                         writer.write(packageStr +
+                                "import org.springframework.web.bind.annotation.RestController;\n" +
                                 "\n" +
+                                "@RestController\n" +
                                 "public class " + pojo.name + controllerDirectory+"{\n" +
                                 "    \n" +
                                 "}");
@@ -396,7 +398,7 @@ public class CodeGenner {
                             packageStr = "package " + serviceDirectory + ";\n";
                         }
                         writer.write(packageStr +
-                                "\n" +
+                                "import org.springframework.stereotype.Service;\n" +
                                 "@Service\n" +
                                 "public class " + pojo.name + serviceDirectory+"{\n" +
                                 "    \n" +
