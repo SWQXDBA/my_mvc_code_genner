@@ -3,6 +3,7 @@ import com.sun.corba.se.spi.orb.StringPair;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +20,46 @@ import java.util.Scanner;
  */
 
 public class CodeGenner {
+    static class ViewModelGenerator {
+        private String target;
+
+        public ViewModelGenerator(String target) {
+            this.target = target;
+        }
+
+        private List<String> fieldsNames = new ArrayList<>();
+
+        public void addField(String field){
+            fieldsNames.add(field);
+        }
+        public void setFieldsByObj(Object o){
+            Field[] declaredFields = o.getClass().getDeclaredFields();
+            for (Field field : declaredFields) {
+                fieldsNames.add(field.getName()) ;
+              //  System.out.println(field.getDeclaringClass().getSimpleName()+" "+field.getName());
+            }
+
+        }
+
+
+       public String getViewModelMethodString(){
+            String vmName = target+"ViewModel";
+
+            StringBuilder fieldsSTRs = new StringBuilder();
+           for (String fieldsName : fieldsNames) {
+               fieldsSTRs.append("            v.").append(fieldsName).append(" = this.").append(fieldsName).append(";\n");
+           }
+
+            return  "    public void getViewModel(){\n" +
+                    "            "+vmName+" v = new "+vmName+"();\n" +
+                    fieldsSTRs.toString()+
+                    "            return v;\n" +
+                    "    }\n";
+
+        }
+
+
+    }
     static class Pojo {
         private final String name;
         private boolean controller = true;
@@ -26,6 +67,7 @@ public class CodeGenner {
         private boolean service = true;
         private boolean pojo = true;
 
+        private boolean viewModel = true;
       
         //用于CrudRepository
         public String idClassName = "Long";
@@ -39,8 +81,25 @@ public class CodeGenner {
     }
 
 
-/*    public static void main(String[] args) {
-        CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA\\IdeaProjects\\my_mvc_code_genner\\src");
+    /**
+     * 输入一个对象 生成对应的生成器的字符串
+     * @param pojo
+     * @return
+     */
+    public static String getGeneratorString(Object pojo){
+        String pojoName = pojo.getClass().getSimpleName();
+        StringBuilder builder = new StringBuilder();
+        builder.append(".addPojo(\"").append(pojoName).append("\")\n");
+        for (Field declaredField : pojo.getClass().getDeclaredFields()) {
+            builder.append(".addField(\"").append(declaredField.getDeclaringClass().getSimpleName())
+                    .append("\",\"").append(declaredField.getName()) .append("\")\n");
+
+        }
+        return builder.toString();
+    }
+    public static void main(String[] args) {
+
+/*        CodeGenner genner = new CodeGenner("C:\\Users\\SWQXDBA2\\IdeaProjects\\my_mvc_code_genner\\src");
         genner.repositoryDirectory("Dao")
 
                 .addPojo("Book").idClassName("Integer")
@@ -57,9 +116,9 @@ public class CodeGenner {
                 .setController(false).setService(false)
 
 
-                .start();
+                .start();*/
 
-    }*/
+    }
 
     Pojo target;
     List<Pojo> pojos = new ArrayList<>();
@@ -69,12 +128,13 @@ public class CodeGenner {
     String repositoryDirectory = "Repository";
     String serviceDirectory = "Service";
     String pojoDirectory = "Pojo";
+    String viewModelDirectory = "ViewModel";
 
     private boolean controllerOpen = true;
     private boolean repositoryOpen = true;
     private boolean serviceOpen = true;
     private boolean pojoOpen = true;
-
+    private boolean viewModelOpen = true;
     private String packageName;
 
     private boolean recover = false;
@@ -175,6 +235,15 @@ public class CodeGenner {
         return this;
     }
     /**
+     * 设置 viewModel 默认为ViewModel
+     * @param name
+     * @return
+     */
+    public CodeGenner viewModelDirectory(String name) {
+        viewModelDirectory = name;
+        return this;
+    }
+    /**
      * 用来给Pojo添加一个类的属性 如 addField("String","name");
      * 如果不给属性名 则以属性类名的小写作为属性名 如 User user
      * @param filedClassName 属性的类型名称 如String Integer
@@ -190,7 +259,12 @@ public class CodeGenner {
      * @return
      */
     public CodeGenner addField(String filedClassName, String filedName) {
-
+        if (filedName == null) {
+            //取出属性的首字母 改成小写作为属性名
+            String firstWord = filedClassName.charAt(0) + "";
+            String s = firstWord.toLowerCase(Locale.ROOT);
+            filedName = filedClassName.replaceFirst(firstWord, s);
+        }
         target.fields.add(new StringPair(filedClassName, filedName));
         return this;
     }
@@ -244,6 +318,15 @@ public class CodeGenner {
      */
     public CodeGenner setController(boolean flag) {
         target.controller = flag;
+        return this;
+    }
+    /**
+     * 对Pojo使用 设置是否生成对应的ViewModel
+     * @param flag
+     * @return
+     */
+    public CodeGenner setViewModel(boolean flag) {
+        target.viewModel = flag;
         return this;
     }
     /**
@@ -310,6 +393,7 @@ public class CodeGenner {
         String rep = rootPath + "\\" + repositoryDirectory;
         String ser = rootPath + "\\" + serviceDirectory;
         String poj = rootPath + "\\" + pojoDirectory;
+        String vom = rootPath + "\\" + viewModelDirectory;
         try {
             if (!Files.exists(Paths.get(con))) {
 
@@ -329,6 +413,9 @@ public class CodeGenner {
             if (!Files.exists(Paths.get(poj))) {
                 Files.createDirectory(Paths.get(poj));
 
+            }
+            if (!Files.exists(Paths.get(vom))) {
+                Files.createDirectory(Paths.get(vom));
             }
 
             for (Pojo pojo : pojos) {
@@ -423,6 +510,68 @@ public class CodeGenner {
                         for (StringPair pair : pojo.fields) {
                             String field = pair.getFirst();
                             String val = pair.getSecond();
+
+
+                            fieldsStrBuilder.append("    ").append(field).append(" ").append(val).append(";\n\n");
+                        }
+
+                        String packageStr;
+                        if (!"".equals(packageName)) {
+                            packageStr = "package " + packageName + "." + pojoDirectory + ";\n";
+                        } else {
+                            packageStr = "package " + pojoDirectory + ";\n";
+                        }
+                        String vm = "";
+                        if(pojo.viewModel){
+                            ViewModelGenerator vmg = new ViewModelGenerator(pojo.name);
+                            for (StringPair stringPair : pojo.fields) {
+                                vmg.addField(stringPair.getSecond());
+                            }
+                            vm = vmg.getViewModelMethodString();
+                        }
+                        //导入视图模型的包名
+                        String importStr = "";
+                        if(pojo.viewModel){
+                            importStr = packageStr.replace("package", "import")
+                                    .replace(pojoDirectory+";\n",viewModelDirectory ) +
+                                    "." +
+                                    pojo.name+viewModelDirectory+";\n";
+                        }
+
+
+                        writer.write(packageStr +
+                                "\n" +
+                                "import lombok.Data;\n" +
+                                "import javax.persistence.*;\n" +
+                                importStr+
+                                "@Data\n" +
+
+                                "@Entity\n" +
+                                "public class " + pojo.name + "{\n" +
+                                "    \n" +
+                                "    @Id\n" +
+                                "    @GeneratedValue(strategy = GenerationType.IDENTITY)\n" +
+                                fieldsStrBuilder.toString() +
+                                "\n"+
+                                vm+
+                                "\n"+
+                                "}");
+                        writer.close();
+
+                    }
+                }
+                if(pojo.viewModel){
+                    Path path = Paths.get(vom + "\\" + pojo.name +viewModelDirectory+ ".java");
+                    if (!Files.exists(path)||recover) {
+                        if (Files.exists(path)&&recover) {
+                            Files.delete(path);
+                        }
+                        Files.createFile(path);
+                        FileWriter writer = new FileWriter(String.valueOf(path));
+                        StringBuilder fieldsStrBuilder = new StringBuilder();
+                        for (StringPair pair : pojo.fields) {
+                            String field = pair.getFirst();
+                            String val = pair.getSecond();
                             if (val == null) {
                                 //取出属性的首字母 改成小写作为属性名
                                 String firstWord = field.charAt(0) + "";
@@ -435,22 +584,19 @@ public class CodeGenner {
 
                         String packageStr;
                         if (!"".equals(packageName)) {
-                            packageStr = "package " + packageName + "." + pojoDirectory + ";\n";
+                            packageStr = "package " + packageName + "." + viewModelDirectory + ";\n";
                         } else {
-                            packageStr = "package " + pojoDirectory + ";\n";
+                            packageStr = "package " + viewModelDirectory + ";\n";
                         }
+
                         writer.write(packageStr +
                                 "\n" +
                                 "import lombok.Data;\n" +
-                                "import javax.persistence.*;\n" +
                                 "@Data\n" +
-
-                                "@Entity\n" +
-                                "public class " + pojo.name + "{\n" +
-                                "    \n" +
-                                "    @Id\n" +
-                                "    @GeneratedValue(strategy = GenerationType.IDENTITY)\n" +
+                                "public class " + pojo.name+viewModelDirectory + "{\n" +
                                 fieldsStrBuilder.toString() +
+                                "\n"+
+
                                 "}");
                         writer.close();
 
